@@ -92,12 +92,34 @@ impl ToDoApp {
 
         for line in reader.lines() {
             let line = line?;
+            if line.trim().is_empty() {
+                continue;
+            }
+
             let fields: Vec<&str> = line.split(';').collect();
 
+            let name = fields[0].to_string();
+
+            let description = match fields.get(1) {
+                Some(value) => {
+                    if value.is_empty() {
+                        None
+                    } else {
+                        Some(value.to_string())
+                    }
+                },
+                None => return Err("Malformed CSV file; missing description field".into()),
+            };
+
+            let is_completed = match fields.get(2) {
+                Some(value) => *value == "true",
+                None => return Err("Malformed CSV file; missing is completed field".into()),
+            };
+
             list.push(ToDo {
-                name: fields[0].to_string(),
-                description: Some(fields[1].to_string()),
-                is_completed: fields[2] == "true",
+                name,
+                description,
+                is_completed,
             });
         }
 
